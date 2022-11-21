@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class Test {
@@ -18,8 +19,9 @@ public class Test {
 
             Search bm = new Search(text, pattern, 1);
             Search kmp = new Search(text, pattern, 2);
-            Search ac = new Search(text, pattern, 3);
+            //Search ac = new Search(text, pattern, 3);
 
+            parser.delete(0, parser.length());
         }
 
     }

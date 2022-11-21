@@ -1,0 +1,10 @@
+Pr, 6 Project Proposal Requirements
+single, Format: Please use Times New Roman (12 pt) or Calibri (11 pt), single space, single column, and one
+a, inch margins all around.
+ll, The length of your project proposal will be no more than 2 pages and it will include the following.
+title, Project title.
+me, Name and email address of each team member.
+description, Motivation and a description of the project topic that you will be investigating.
+the, Your project type and a simple timeline including the major tasks you need to complete for the
+you, Goals of your project. What are the outcomes that you are expecting?
+books, At least three references to recent books or technical articles you plan to use.
