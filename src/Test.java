@@ -18,8 +18,8 @@ public class Test {
             String text = parser.substring(parser.indexOf(",")+1, parser.length());
 
             Search bm = new Search(text, pattern, 1);
-            Search kmp = new Search(text, pattern, 2);
-            //Search ac = new Search(text, pattern, 3);
+            //Search kmp = new Search(text, pattern, 2);
+            Search ac = new Search(text, pattern, 3);
 
             parser.delete(0, parser.length());
         }

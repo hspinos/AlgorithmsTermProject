@@ -1,6 +1,4 @@
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
 
 public class Search {
 
@@ -12,14 +10,18 @@ public class Search {
     public static int NO_OF_CHARS = 256;
 
     //AC
-    public int MAXS = 500;
-    public int MAXC = 26;
-    public int[] out = new int[MAXS];
-    public int[] f = new int[MAXS];
-    public int[][] g = new int[MAXS][MAXC];
-
+//    public int MAXS = 500;
+//    public int MAXC = 26;
+//    public int[] out = new int[MAXS];
+//    public int[] f = new int[MAXS];
+//    public int[][] g = new int[MAXS][MAXC];
+//
     public String inputText;
     public String inputPattern;
+    public List<ACNode> trie;
+    public List<Integer> wordsLength;
+    int size = 0;
+    int root = 0;
 
     public Search(String text, String pattern, int alg){
         this.inputText = text;
@@ -37,9 +39,23 @@ public class Search {
             case AC:
                 System.out.println("----------Running with AC---------");
                 String[] patterns = pattern.split(" ");
-                ACSearch(patterns, patterns.length, text);
+                trie = new ArrayList<ACNode>();
+                wordsLength = new ArrayList<Integer>();
+                init();
+                for (int i = 0; i < patterns.length; i++){
+                    AddString(patterns[i], i);
+                }
+                PrepareAho();
+                int countOfMatches = ProcessString(text);
+                System.out.println("AC num matches: " + countOfMatches);
+                //ACSearch(patterns, patterns.length, text);
                 break;
         }
+    }
+
+    private void init(){
+        trie.add(new ACNode());
+        size++;
     }
 
 
@@ -157,291 +173,109 @@ public class Search {
     }
 
     //--------------------------Methods for Aho-Corasick-------------------------//
-    public int buildMatchingMachine(String arr[], int k){
-        // Initialize all values in output function as 0.
+    public void AddString(String s, int wordId){
+        int curNode = root;
+        for (int i = 0; i < s.length(); ++i){
+            char c = s.charAt(i);
 
-        Arrays.fill(out, 0);
-
-
-        // Initialize all values in goto function as -1.
-
-        for(int i = 0; i < MAXS; i++)
-
-            Arrays.fill(g[i], -1);
-
-
-        // Initially, we just have the 0 state
-
-        int states = 1;
-
-
-        // Convalues for goto function, i.e., fill g[][]
-
-        // This is same as building a Trie for arr[]
-
-        for(int i = 0; i < k; ++i)
-
-        {
-
-            String word = arr[i];
-
-            int currentState = 0;
-
-
-            // Insert all characters of current
-
-            // word in arr[]
-
-            for(int j = 0; j < word.length(); ++j)
-
-            {
-
-                int ch = word.charAt(j) - 'a';
-
-
-                // Allocate a new node (create a new state)
-
-                // if a node for ch doesn't exist.
-
-                if (g[currentState][ch] == -1)
-
-                    g[currentState][ch] = states++;
-
-
-                currentState = g[currentState][ch];
-
+            if (!trie.get(curNode).children.containsKey(c)){
+                trie.add(new ACNode());
+                trie.get(size).suffixLink = -1;
+                trie.get(size).parent = curNode;
+                trie.get(size).parentChar = c;
+                trie.get(curNode).children.put(c, size);
+                size++;
             }
-
-
-            // Add current word in output function
-
-            out[currentState] |= (1 << i);
-
+            curNode = (int)trie.get(curNode).children.get(c);
         }
 
+        trie.get(curNode).leaf = true;
+        trie.get(curNode).wordID = wordId;
+        wordsLength.add(s.length());
+    }
 
-        // For all characters which don't have
+    public void PrepareAho(){
+        Queue<Integer> nodeQueue = new LinkedList<>();
+        nodeQueue.add(root);
+        while (!nodeQueue.isEmpty()){
+            int curNode = nodeQueue.poll();
+            CalcSuffLink(curNode);
 
-        // an edge from root (or state 0) in Trie,
+            for(Object c : trie.get(curNode).children.keySet()){
+                nodeQueue.add((int)trie.get(curNode).children.get(c));
+            }
+        }
+    }
 
-        // add a goto edge to state 0 itself
+    public void CalcSuffLink(int node){
+        if (node == root) {
+            trie.get(node).suffixLink = root;
+            trie.get(node).endWordLink = root;
+            return;
+        }
+        if (trie.get(node).parent == root){
+            trie.get(node).suffixLink = root;
+            if (trie.get(node).leaf){
+                trie.get(node).endWordLink = node;
+            }
+            else{
+                trie.get(node).endWordLink = trie.get(trie.get(node).suffixLink).endWordLink;
+            }
+            return;
+        }
+        int curBetterNode = trie.get(trie.get(node).parent).suffixLink;
+        char chNode = trie.get(node).parentChar;
 
-        for(int ch = 0; ch < MAXC; ++ch)
-
-            if (g[0][ch] == -1)
-
-                g[0][ch] = 0;
-
-
-        // Now, let's build the failure function
-
-        // Initialize values in fail function
-
-        Arrays.fill(f, -1);
-
-
-        // Failure function is computed in
-
-        // breadth first order
-
-        // using a queue
-
-        Queue<Integer> q = new LinkedList<>();
-
-
-        // Iterate over every possible input
-
-        for(int ch = 0; ch < MAXC; ++ch)
-
-        {
-
-
-
-            // All nodes of depth 1 have failure
-
-            // function value as 0. For example,
-
-            // in above diagram we move to 0
-
-            // from states 1 and 3.
-
-            if (g[0][ch] != 0)
-
-            {
-
-                f[g[0][ch]] = 0;
-
-                q.add(g[0][ch]);
-
+        while (true){
+            if (trie.get(curBetterNode).children.containsKey(chNode)){
+                trie.get(node).suffixLink = (int)trie.get(curBetterNode).children.get(chNode);
+                break;
             }
 
+            if (curBetterNode == root){
+                trie.get(node).suffixLink = root;
+                break;
+            }
+            curBetterNode = trie.get(curBetterNode).suffixLink;
         }
 
+        if (trie.get(node).leaf){
+            trie.get(node).endWordLink = node;
+        }
+        else{
+            trie.get(node).endWordLink = trie.get(trie.get(node).suffixLink).endWordLink;
+        }
+    }
 
-        // Now queue has states 1 and 3
+    public int ProcessString(String text){
+        int currentState = root;
+        int result = 0;
 
-        while (!q.isEmpty())
-
-        {
-
-
-
-            // Remove the front state from queue
-
-            int state = q.peek();
-
-            q.remove();
-
-
-            // For the removed state, find failure
-
-            // function for all those characters
-
-            // for which goto function is
-
-            // not defined.
-
-            for(int ch = 0; ch < MAXC; ++ch)
-
-            {
-
-
-
-                // If goto function is defined for
-
-                // character 'ch' and 'state'
-
-                if (g[state][ch] != -1)
-
-                {
-
-
-
-                    // Find failure state of removed state
-
-                    int failure = f[state];
-
-
-                    // Find the deepest node labeled by proper
-
-                    // suffix of String from root to current
-
-                    // state.
-
-                    while (g[failure][ch] == -1)
-
-                        failure = f[failure];
-
-
-                    failure = g[failure][ch];
-
-                    f[g[state][ch]] = failure;
-
-
-                    // Merge output values
-
-                    out[g[state][ch]] |= out[failure];
-
-
-                    // Insert the next level node
-
-                    // (of Trie) in Queue
-
-                    q.add(g[state][ch]);
-
+        for (int j = 0; j < text.length(); j++){
+            while (true){
+                if (trie.get(currentState).children.containsKey(text.charAt(j))){
+                    currentState = (int)trie.get(currentState).children.get(text.charAt(j));
+                    break;
                 }
 
-            }
-
-        }
-
-        return states;
-    }
-
-    public int findNextState(int currentState, char nextInput){
-        int answer = currentState;
-
-        int ch = nextInput - 'a';
-
-
-        // If goto is not defined, use
-
-        // failure function
-
-        while (g[answer][ch] == -1)
-
-            answer = f[answer];
-
-
-        return g[answer][ch];
-    }
-
-    public void ACSearch(String[] arr, int k, String text){
-// Preprocess patterns.
-
-        // Build machine with goto, failure
-
-        // and output functions
-
-        buildMatchingMachine(arr, k);
-
-
-        // Initialize current state
-
-        int currentState = 0;
-
-
-        // Traverse the text through the
-
-        // built machine to find all
-
-        // occurrences of words in arr[]
-
-        for(int i = 0; i < text.length(); ++i)
-
-        {
-
-            currentState = findNextState(currentState,
-
-                    text.charAt(i));
-
-
-            // If match not found, move to next state
-
-            if (out[currentState] == 0)
-
-                continue;
-
-
-            // Match found, print all matching
-
-            // words of arr[]
-
-            // using output function.
-
-            for(int j = 0; j < k; ++j)
-
-            {
-
-                if ((out[currentState] & (1 << j)) > 0)
-
-                {
-
-                    System.out.print("Word " +  arr[j] +
-
-                            " appears from " +
-
-                            (i - arr[j].length() + 1) +
-
-                            " to " +  i + "\n");
-
+                if (currentState == root){
+                    break;
                 }
-
+                currentState = trie.get(currentState).suffixLink;
             }
+            int checkState = currentState;
 
+            while (true){
+                checkState = trie.get(checkState).endWordLink;
+
+                if (checkState == root) break;
+
+                result++;
+                int indexOfMatch = j + 1 - wordsLength.get(trie.get(checkState).wordID);
+
+                checkState = trie.get(checkState).suffixLink;
+            }
         }
+        return result;
     }
-
-
-
 }
