@@ -92,7 +92,7 @@ public class Search {
             }
 
             if (j < 0){
-                System.out.println("Patterns occur at shift = " + s);
+                System.out.println("Patterns occur at index = " + s);
                 s += (s+m < n)? m-badchar[txt.charAt(s-m)] : 1;
             }
             else{
@@ -275,7 +275,7 @@ public class Search {
 
                 result++;
                 int indexOfMatch = j + 1 - wordsLength.get(trie.get(checkState).wordID);
-                System.out.println("Pattern occurs at shift = " + indexOfMatch);
+                System.out.println("Pattern occurs at index = " + indexOfMatch);
                 checkState = trie.get(checkState).suffixLink;
             }
         }

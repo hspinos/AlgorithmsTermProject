@@ -1,0 +1,10 @@
+est, The FitnessGram Pacer Test is a multistage aerobic capacity test that progressively gets more difficult as it continues.
+test, The 20-meter Pacer test will begin in 30 seconds.
+the, Line up at the start.
+speed, The running speed starts slowly but gets faster each minute after you hear this signal.
+a, [beep] A single lap should be completed each time you hear this sound.
+as, [ding] Remember to run in a straight line, and run as long as possible.
+lap, The second time you fail to complete a lap before the sound, your test is over.
+begin, The test will begin on the word start.
+e, On your mark, get ready, start.
+one, Feel it One Two Three Four Five Six Seven End of level one
