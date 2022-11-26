@@ -10,12 +10,6 @@ public class Search {
     public static int NO_OF_CHARS = 256;
 
     //AC
-//    public int MAXS = 500;
-//    public int MAXC = 26;
-//    public int[] out = new int[MAXS];
-//    public int[] f = new int[MAXS];
-//    public int[][] g = new int[MAXS][MAXC];
-//
     public String inputText;
     public String inputPattern;
     public List<ACNode> trie;
@@ -23,6 +17,10 @@ public class Search {
     int size = 0;
     int root = 0;
 
+    public int keyComparisons = 0;
+
+
+    //-----------------------------Constructors-----------------------------------//
     public Search(String text, String pattern, int alg){
         this.inputText = text;
         this.inputPattern = pattern;
@@ -47,7 +45,7 @@ public class Search {
                 }
                 PrepareAho();
                 int countOfMatches = ProcessString(text);
-                System.out.println("AC num matches: " + countOfMatches);
+                //System.out.println("AC num matches: " + countOfMatches);
                 //ACSearch(patterns, patterns.length, text);
                 break;
         }
@@ -57,6 +55,7 @@ public class Search {
         trie.add(new ACNode());
         size++;
     }
+    //----------------------------------------------------------------------------//
 
 
     //-----------------------------Methods for Boyer Moore------------------------//
@@ -88,6 +87,7 @@ public class Search {
             int j = m - 1;
 
             while(j >= 0 && pat.charAt(j) == txt.charAt(s+j)){
+                keyComparisons++;
                 j--;
             }
 
@@ -118,6 +118,7 @@ public class Search {
         int i = 0; // index for txt[]
         while ((N - i) >= (M - j)) {
             if (pat.charAt(j) == text.charAt(i)) {
+                keyComparisons++;
                 j++;
                 i++;
             }
@@ -129,6 +130,7 @@ public class Search {
 
             // mismatch after j matches
             else if (i < N && pat.charAt(j) != text.charAt(i)) {
+                keyComparisons++;
                 // Do not match lps[0..lps[j-1]] characters,
                 // they will match anyway
                 if (j != 0)
@@ -254,6 +256,7 @@ public class Search {
         for (int j = 0; j < text.length(); j++){
             while (true){
                 if (trie.get(currentState).children.containsKey(text.charAt(j))){
+                    keyComparisons++;
                     currentState = (int)trie.get(currentState).children.get(text.charAt(j));
                     break;
                 }
@@ -272,7 +275,7 @@ public class Search {
 
                 result++;
                 int indexOfMatch = j + 1 - wordsLength.get(trie.get(checkState).wordID);
-
+                System.out.println("Pattern occurs at shift = " + indexOfMatch);
                 checkState = trie.get(checkState).suffixLink;
             }
         }
